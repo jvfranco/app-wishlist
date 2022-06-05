@@ -23,7 +23,7 @@ public class WishlistController {
     @GetMapping(value = "/products/{customerId}")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Get Wishlist with  all products.")
-    public WishlistDTO getAllProductsById(@PathVariable String customerId) throws BusinessException {
+    public WishlistDTO getAllProductsById(@PathVariable String customerId) {
         var wishlist = this.wishlistService.getAllProductsByCustomerId(customerId);
         return new WishlistDTO(wishlist.getCustomerId(), wishlist.getProducts(), wishlist.getAmount());
     }
@@ -31,7 +31,7 @@ public class WishlistController {
     @PostMapping(value = "/addProduct")
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Add a product to the wishlist.")
-    public WishlistDTO addProductToWishlist(@RequestBody @Valid RequestDTO requestDTO) throws BusinessException {
+    public WishlistDTO addProductToWishlist(@RequestBody @Valid RequestDTO requestDTO) {
         var wishlist = this.wishlistService.addProductToWishlist(requestDTO.customerId(), requestDTO.productId());
         return new WishlistDTO(wishlist.getCustomerId(), wishlist.getProducts(), wishlist.getAmount());
     }
@@ -39,7 +39,7 @@ public class WishlistController {
     @PostMapping(value = "/removeProduct")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Remove a product to the wishlist.")
-    public WishlistDTO removeProductToWishlist(@RequestBody @Valid RequestDTO requestDTO) throws BusinessException {
+    public WishlistDTO removeProductToWishlist(@RequestBody @Valid RequestDTO requestDTO) {
         var wishlist = this.wishlistService.removeProductToWishlist(requestDTO.customerId(), requestDTO.productId());
         return new WishlistDTO(wishlist.getCustomerId(), wishlist.getProducts(), wishlist.getAmount());
     }
@@ -47,7 +47,7 @@ public class WishlistController {
     @PostMapping(value = "/consultProduct")
     @ResponseStatus(HttpStatus.OK)
     @Operation(summary = "Check if a product is already in the wishlist.")
-    public boolean consultProductInWishlist(@RequestBody @Valid RequestDTO requestDTO) throws BusinessException {
+    public boolean consultProductInWishlist(@RequestBody @Valid RequestDTO requestDTO) {
         return this.wishlistService.consultProductInWishList(requestDTO.customerId(), requestDTO.productId());
     }
 

@@ -13,9 +13,7 @@ public class ProductService {
     private final ProductRepository productRepository;
 
     public Product findProductById(String productId) {
-        Product product = this.productRepository.findById(productId)
+        return this.productRepository.findById(productId)
                 .orElseThrow(() -> new NotFoundException("Product not found."));
-
-        return product;
     }
 }

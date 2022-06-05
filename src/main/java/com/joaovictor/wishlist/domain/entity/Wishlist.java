@@ -27,6 +27,7 @@ public class Wishlist {
         if (this.products == null) {
             this.products = new ArrayList<>();
         }
+
         if (this.products.size() < 20) {
             List<Product> newList = new ArrayList<>();
             newList.addAll(this.products);
@@ -34,9 +35,9 @@ public class Wishlist {
             this.products = newList;
             this.sumAmount();
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     public void removeProductToList(Product product) {

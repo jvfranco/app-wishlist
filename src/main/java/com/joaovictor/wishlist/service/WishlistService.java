@@ -10,9 +10,9 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class WishlistService {
 
-    private final String messageMaxProducts = "Wishlist with more than %d products.";
-    private final String messageNoProducts = "Wishlist is empty.";
-    private final String messageProductNotExist = "Product does not exist in this wishlist";
+    private final static String messageMaxProducts = "Wishlist with more than %d products.";
+    private final static String messageNoProducts = "Wishlist is empty.";
+    private final static String messageProductNotExist = "Product does not exist in this wishlist";
 
     private final WishlistRepository wishlistRepository;
     private final ProductService productService;
@@ -42,12 +42,10 @@ public class WishlistService {
             if (wishlist.getProducts().contains(product)) {
                 wishlist.removeProductToList(product);
                 return wishlist;
-            } else {
-                throw new BusinessException(messageProductNotExist);
             }
-        } else {
-            throw new BusinessException(messageNoProducts);
+            throw new BusinessException(messageProductNotExist);
         }
+        throw new BusinessException(messageNoProducts);
     }
 
     public boolean consultProductInWishList(String customerId, String productId) throws BusinessException {

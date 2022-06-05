@@ -4,6 +4,7 @@ import com.joaovictor.wishlist.domain.entity.Product;
 import com.joaovictor.wishlist.domain.entity.Wishlist;
 import com.joaovictor.wishlist.domain.repository.WishlistRepository;
 import com.joaovictor.wishlist.exception.BusinessException;
+import com.joaovictor.wishlist.factory.ObjectsFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -38,50 +39,42 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("Must return wishlist by customerId.")
-    public void getAllProductsByCustomerIdTest() throws BusinessException {
-        String customerId = "1", productId = "1", id = "1";
-        String description = "Product 01";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description(description).price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(customerId).products(List.of(product)).amount(value).build();
+    @DisplayName("Should return a wishlist by customerId.")
+        void getAllProductsByCustomerIdTest() {
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        BDDMockito.given(this.wishlistRepository.findByCustomerId(customerId)).willReturn(Optional.of(wishlist));
+        BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        Wishlist wishlist1 = this.wishlistService.getAllProductsByCustomerId(customerId);
+        Wishlist wishlistTest = this.wishlistService.getAllProductsByCustomerId(BDDMockito.anyString());
 
-        Assertions.assertThat(wishlist1.getId()).isEqualTo(id);
-        Assertions.assertThat(wishlist1.getCustomerId()).isEqualTo(customerId);
-        Assertions.assertThat(wishlist1.getAmount()).isEqualTo(value);
-        Assertions.assertThat(wishlist1.getProducts()).isNotEmpty();
+        Assertions.assertThat(wishlistTest.getId()).isEqualTo(wishlist.getId());
+        Assertions.assertThat(wishlistTest.getCustomerId()).isEqualTo(wishlist.getCustomerId());
+        Assertions.assertThat(wishlistTest.getAmount()).isEqualTo(wishlist.getAmount());
+        Assertions.assertThat(wishlistTest.getProducts()).isNotEmpty();
 
     }
 
     @Test
     @DisplayName("Must add a product to the wishlist.")
-    public void addProductToWishlistTest() throws BusinessException {
-        String customerId = "1", productId = "1", id = "1";
-        String description = "Product 01";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description(description).price(value).build();
-        Product product2 = Product.builder().id(productId).description(description).price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).products(List.of(product)).amount(value).customerId(customerId).build();
+    void addProductToWishlistTest() {
+        Product product = ObjectsFactory.getProduct();
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        BDDMockito.given(this.wishlistRepository.findByCustomerId(customerId)).willReturn(Optional.of(wishlist));
-        BDDMockito.given(this.productService.findProductById(productId)).willReturn(product2);
+        BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
+        BDDMockito.given(this.productService.findProductById(BDDMockito.anyString())).willReturn(product);
 
-        Wishlist wishlist1 = this.wishlistService.addProductToWishlist(customerId, productId);
+        Wishlist wishlistTest = this.wishlistService.addProductToWishlist(wishlist.getCustomerId(), product.getId());
 
-        Assertions.assertThat(wishlist1.getId()).isEqualTo(id);
-        Assertions.assertThat(wishlist1.getCustomerId()).isEqualTo(customerId);
-        Assertions.assertThat(wishlist1.getAmount()).isEqualTo(value.multiply(BigDecimal.valueOf(2)));
-        Assertions.assertThat(wishlist1.getProducts()).isNotEmpty();
+        Assertions.assertThat(wishlistTest.getId()).isEqualTo(wishlist.getId());
+        Assertions.assertThat(wishlistTest.getCustomerId()).isEqualTo(wishlist.getCustomerId());
+        Assertions.assertThat(wishlistTest.getAmount()).isEqualTo(wishlist.getAmount());
+        Assertions.assertThat(wishlistTest.getProducts().size()).isEqualTo(2);
 
     }
 
     @Test
-    @DisplayName("Should return a exception when add a product to the wishlist.")
-    public void notAddProductToWishlistTest() {
+    @DisplayName("Should return an exception when adding a product to the wishlist.")
+    void notAddProductToWishlistTest() {
         String messageMaxProducts = String.format("Wishlist with more than %d products.", 20);
 
         Wishlist wishlist = BDDMockito.mock(Wishlist.class);
@@ -100,28 +93,25 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("Must remove a product to the wishlist.")
-    public void removeProductToWishlistTest() throws BusinessException {
-        String customerId = "1", productId = "1", id = "1";
-        String description = "Product 01";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description(description).price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).products(List.of(product)).amount(value).customerId(customerId).build();
+    @DisplayName("Must remove a product from the wishlist.")
+    void removeProductToWishlistTest() {
+        Product product = ObjectsFactory.getProduct();
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        BDDMockito.given(this.wishlistRepository.findByCustomerId(customerId)).willReturn(Optional.of(wishlist));
-        BDDMockito.given(this.productService.findProductById(productId)).willReturn(product);
+        BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
+        BDDMockito.given(this.productService.findProductById(BDDMockito.anyString())).willReturn(product);
 
-        Wishlist wishlist1 = this.wishlistService.removeProductToWishlist(customerId, productId);
+        Wishlist wishlistTest = this.wishlistService.removeProductToWishlist(wishlist.getCustomerId(), product.getId());
 
-        Assertions.assertThat(wishlist1.getId()).isEqualTo(id);
-        Assertions.assertThat(wishlist1.getAmount()).isEqualTo(BigDecimal.ZERO);
-        Assertions.assertThat(wishlist1.getProducts()).isEmpty();
+        Assertions.assertThat(wishlistTest.getId()).isEqualTo(wishlist.getId());
+        Assertions.assertThat(wishlistTest.getAmount()).isEqualTo(BigDecimal.ZERO);
+        Assertions.assertThat(wishlistTest.getProducts()).isEmpty();
 
     }
 
     @Test
-    @DisplayName("Should return a exception when remove a product to the wishlist.")
-    public void notRemoveProductToWishlistTest() {
+    @DisplayName("Should return an exception when removing a product from the wishlist.")
+    void notRemoveProductToWishlistTest() {
         String messageProductNotExist = "Product does not exist in this wishlist";
 
         Wishlist wishlist = BDDMockito.mock(Wishlist.class);
@@ -142,8 +132,8 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("Should return a exception when remove a product to the empty wishlist.")
-    public void notRemoveProductToEmptyWishlistTest() {
+    @DisplayName("Should return an exception when removing a product from an empty wishlist.")
+    void notRemoveProductToEmptyWishlistTest() {
         String messageNoProducts = "Wishlist is empty.";
 
         Wishlist wishlist = BDDMockito.mock(Wishlist.class);
@@ -162,34 +152,26 @@ class WishlistServiceTest {
     }
 
     @Test
-    @DisplayName("Should be return true if the product exists in the wishlist. ")
-    public void consultProductInWishListTest() throws BusinessException {
-        String customerId = "1", productId = "1", id = "1";
-        String description = "Product 01";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description(description).price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).products(List.of(product)).amount(value).customerId(customerId).build();
+    @DisplayName("Should return true if the product exists in the wishlist. ")
+    void consultProductInWishListTest() {
+        Product product = ObjectsFactory.getProduct();
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        boolean result = this.wishlistService.consultProductInWishList(customerId, productId);
+        boolean result = this.wishlistService.consultProductInWishList(wishlist.getCustomerId(), product.getId());
 
         Assertions.assertThat(result).isTrue();
     }
 
     @Test
-    @DisplayName("Should be return false if the product not exists in the wishlist. ")
-    public void consultFalseProductInWishListTest() throws BusinessException {
-        String customerId = "1", productId = "1", id = "1";
-        String productId2 = "2";
-        String description = "Product 01";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description(description).price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).products(List.of(product)).amount(value).customerId(customerId).build();
+    @DisplayName("Should return false if the product doesn't exists in the wishlist. ")
+    void consultFalseProductInWishListTest() throws BusinessException {
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        boolean result = this.wishlistService.consultProductInWishList(customerId, productId2);
+        boolean result = this.wishlistService.consultProductInWishList(wishlist.getCustomerId(), "2");
 
         Assertions.assertThat(result).isFalse();
     }

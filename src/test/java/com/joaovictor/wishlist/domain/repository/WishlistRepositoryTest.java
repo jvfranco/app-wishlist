@@ -1,7 +1,7 @@
 package com.joaovictor.wishlist.domain.repository;
 
-import com.joaovictor.wishlist.domain.entity.Product;
 import com.joaovictor.wishlist.domain.entity.Wishlist;
+import com.joaovictor.wishlist.factory.ObjectsFactory;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,8 +12,6 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.math.BigDecimal;
-import java.util.List;
 import java.util.Optional;
 
 @ExtendWith(SpringExtension.class)
@@ -29,17 +27,12 @@ class WishlistRepositoryTest {
 
     @Test
     @DisplayName("Must return a wishlist by customerId.")
-    public void findByCustomerIdTest() {
-        String id = "1";
-        String productId = "1";
-        String customerId = "1";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description("Product 01").price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(customerId).products(List.of(product)).amount(value).build();
+    void findByCustomerIdTest() {
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
         mongoTemplate.save(wishlist, "wishlist");
 
-        Optional<Wishlist> wishlistOptional = this.wishlistRepository.findByCustomerId(customerId);
+        Optional<Wishlist> wishlistOptional = this.wishlistRepository.findByCustomerId(wishlist.getCustomerId());
 
         Assertions.assertThat(wishlistOptional.isPresent()).isTrue();
 

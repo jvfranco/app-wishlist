@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class ApplicationControllerAdvice {
@@ -20,7 +19,7 @@ public class ApplicationControllerAdvice {
         List<String> messages = bindingResult.getAllErrors()
                 .stream()
                 .map(objectError -> objectError.getDefaultMessage())
-                .collect(Collectors.toList());
+                .toList();
 
         return new ApiErrors(messages);
     }

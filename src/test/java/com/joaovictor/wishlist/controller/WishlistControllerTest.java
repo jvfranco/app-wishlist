@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.joaovictor.wishlist.domain.entity.Product;
 import com.joaovictor.wishlist.domain.entity.Wishlist;
 import com.joaovictor.wishlist.domain.entity.dto.RequestDTO;
+import com.joaovictor.wishlist.factory.ObjectsFactory;
 import com.joaovictor.wishlist.service.ProductService;
 import com.joaovictor.wishlist.service.WishlistService;
 import org.hamcrest.Matchers;
@@ -22,9 +23,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-
-import java.math.BigDecimal;
-import java.util.List;
 
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
@@ -45,39 +43,32 @@ class WishlistControllerTest {
 
     @Test
     @DisplayName("Should return a wishlist with all products.")
-    public void getAllProductsByIdTest() throws Exception {
-        String id = "1";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(id).description("Product 01").price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(id).products(List.of(product)).amount(value).build();
+    void getAllProductsByIdTest() throws Exception {
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        BDDMockito.given(this.wishlistService.getAllProductsByCustomerId(id)).willReturn(wishlist);
+        BDDMockito.given(this.wishlistService.getAllProductsByCustomerId(BDDMockito.anyString())).willReturn(wishlist);
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(WISHLIST_API.concat(String.format("/products/%s", id)))
+                .get(WISHLIST_API.concat(String.format("/products/%s", wishlist.getCustomerId())))
                 .accept(MediaType.APPLICATION_JSON);
 
         mockMvc
                 .perform(request)
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(id))
+                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(wishlist.getCustomerId()))
                 .andExpect(MockMvcResultMatchers.jsonPath("products", Matchers.hasSize(1)))
-                .andExpect(MockMvcResultMatchers.jsonPath("amount").value(value));
+                .andExpect(MockMvcResultMatchers.jsonPath("amount").value(wishlist.getAmount()));
     }
 
     @Test
     @DisplayName("Must be add a product to the list.")
-    public void addProductToWishlistTest() throws Exception {
-        String id = "1";
-        String productId = "1";
-        String customerId = "1";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description("Product 01").price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(customerId).products(List.of(product)).amount(value).build();
+    void addProductToWishlistTest() throws Exception {
+        Product product = ObjectsFactory.getProduct();
+        Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        BDDMockito.given(this.wishlistService.addProductToWishlist(customerId, productId)).willReturn(wishlist);
+        BDDMockito.given(this.wishlistService.addProductToWishlist(BDDMockito.anyString(), BDDMockito.anyString())).willReturn(wishlist);
 
-        String json = new ObjectMapper().writeValueAsString(new RequestDTO(customerId, productId));
+        String json = new ObjectMapper().writeValueAsString(new RequestDTO(wishlist.getCustomerId(), product.getId()));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(WISHLIST_API.concat("/addProduct"))
@@ -88,23 +79,18 @@ class WishlistControllerTest {
         mockMvc
                 .perform(request)
                 .andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(customerId))
-                .andExpect(MockMvcResultMatchers.jsonPath("products").isNotEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("amount").value(value));
+                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(wishlist.getCustomerId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("products").isNotEmpty());
     }
 
     @Test
     @DisplayName("Must remove a product from the wishlist.")
-    public void removeProductToWishlistTest() throws Exception {
-        String id = "1";
-        String productId = "1";
-        String customerId = "1";
-        BigDecimal value = BigDecimal.ZERO;
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(customerId).amount(value).build();
+    void removeProductToWishlistTest() throws Exception {
+        Wishlist wishlist = ObjectsFactory.getWishlistEmpty();
 
-        BDDMockito.given(this.wishlistService.removeProductToWishlist(customerId, productId)).willReturn(wishlist);
+        BDDMockito.given(this.wishlistService.removeProductToWishlist(BDDMockito.anyString(), BDDMockito.anyString())).willReturn(wishlist);
 
-        String json = new ObjectMapper().writeValueAsString(new RequestDTO(customerId, productId));
+        String json = new ObjectMapper().writeValueAsString(new RequestDTO(wishlist.getCustomerId(), "1"));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(WISHLIST_API.concat("/removeProduct"))
@@ -115,24 +101,16 @@ class WishlistControllerTest {
         mockMvc
                 .perform(request)
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(customerId))
-                .andExpect(MockMvcResultMatchers.jsonPath("products").isEmpty())
-                .andExpect(MockMvcResultMatchers.jsonPath("amount").value(value));
+                .andExpect(MockMvcResultMatchers.jsonPath("customerId").value(wishlist.getCustomerId()))
+                .andExpect(MockMvcResultMatchers.jsonPath("products").isEmpty());
     }
 
     @Test
     @DisplayName("Must check if a product exists in the wishlist.")
-    public void consultProductInWishlistTest() throws Exception {
-        String id = "1";
-        String productId = "1";
-        String customerId = "1";
-        BigDecimal value = BigDecimal.valueOf(10.0);
-        Product product = Product.builder().id(productId).description("Product 01").price(value).build();
-        Wishlist wishlist = Wishlist.builder().id(id).customerId(customerId).products(List.of(product)).amount(value).build();
+    void consultProductInWishlistTest() throws Exception {
+        BDDMockito.given(this.wishlistService.consultProductInWishList(BDDMockito.anyString(), BDDMockito.anyString())).willReturn(true);
 
-        BDDMockito.given(this.wishlistService.consultProductInWishList(customerId, productId)).willReturn(true);
-
-        String json = new ObjectMapper().writeValueAsString(new RequestDTO(customerId, productId));
+        String json = new ObjectMapper().writeValueAsString(new RequestDTO(BDDMockito.anyString(), BDDMockito.anyString()));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
                 .post(WISHLIST_API.concat("/consultProduct"))
