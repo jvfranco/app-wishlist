@@ -1,5 +1,7 @@
-package com.joaovictor.wishlist.exception;
+package com.joaovictor.wishlist.controller;
 
+import com.joaovictor.wishlist.exception.ApiErrors;
+import com.joaovictor.wishlist.exception.BusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;

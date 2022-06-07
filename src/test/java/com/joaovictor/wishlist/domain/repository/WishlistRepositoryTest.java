@@ -6,23 +6,20 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.data.mongodb.core.MongoTemplate;
+import org.mockito.BDDMockito;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
-@DataMongoTest
 class WishlistRepositoryTest {
 
-    @Autowired
-    MongoTemplate mongoTemplate;
-
-    @Autowired
+    @MockBean
     WishlistRepository wishlistRepository;
 
     @Test
@@ -30,11 +27,12 @@ class WishlistRepositoryTest {
     void findByCustomerIdTest() {
         Wishlist wishlist = ObjectsFactory.getWishlist();
 
-        mongoTemplate.save(wishlist, "wishlist");
+        BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        Optional<Wishlist> wishlistOptional = this.wishlistRepository.findByCustomerId(wishlist.getCustomerId());
+        Optional<Wishlist> wishlistTest = this.wishlistRepository.findByCustomerId(BDDMockito.anyString());
 
-        Assertions.assertThat(wishlistOptional.isPresent()).isTrue();
-
+        Assertions.assertThat(wishlistTest.isPresent()).isTrue();
     }
+
+
 }
