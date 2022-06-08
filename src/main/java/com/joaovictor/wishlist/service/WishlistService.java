@@ -46,8 +46,11 @@ public class WishlistService {
                 .orElseThrow(() -> new NotFoundException(messageNoProducts));
 
         if (wishlist.getProducts() != null && !wishlist.getProducts().isEmpty()) {
-            wishlist.removeProductToList(productId);
-            return this.wishlistRepository.save(wishlist);
+            if (checkProductInWishList(customerId, productId)) {
+                wishlist.removeProductToList(productId);
+                return this.wishlistRepository.save(wishlist);
+            }
+            throw new NotFoundException(messageProductNotExist);
         }
         throw new BusinessException(messageNoProducts);
     }
