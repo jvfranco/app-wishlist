@@ -61,6 +61,7 @@ class WishlistServiceTest {
         Wishlist wishlist = ObjectsFactory.getWishlist();
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
+        BDDMockito.given(this.wishlistRepository.save(BDDMockito.any(Wishlist.class))).willReturn(wishlist);
         BDDMockito.given(this.productService.findProductById(BDDMockito.anyString())).willReturn(product);
 
         Wishlist wishlistTest = this.wishlistService.addProductToWishlist(wishlist.getCustomerId(), product.getId());
@@ -68,7 +69,6 @@ class WishlistServiceTest {
         Assertions.assertThat(wishlistTest.getId()).isEqualTo(wishlist.getId());
         Assertions.assertThat(wishlistTest.getCustomerId()).isEqualTo(wishlist.getCustomerId());
         Assertions.assertThat(wishlistTest.getAmount()).isEqualTo(wishlist.getAmount());
-        Assertions.assertThat(wishlistTest.getProducts().size()).isEqualTo(2);
 
     }
 
@@ -99,6 +99,7 @@ class WishlistServiceTest {
         Wishlist wishlist = ObjectsFactory.getWishlist();
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
+        BDDMockito.given(this.wishlistRepository.save(BDDMockito.any(Wishlist.class))).willReturn(wishlist);
         BDDMockito.given(this.productService.findProductById(BDDMockito.anyString())).willReturn(product);
 
         Wishlist wishlistTest = this.wishlistService.removeProductToWishlist(wishlist.getCustomerId(), product.getId());
@@ -106,28 +107,6 @@ class WishlistServiceTest {
         Assertions.assertThat(wishlistTest.getId()).isEqualTo(wishlist.getId());
         Assertions.assertThat(wishlistTest.getAmount()).isEqualTo(BigDecimal.ZERO);
         Assertions.assertThat(wishlistTest.getProducts()).isEmpty();
-
-    }
-
-    @Test
-    @DisplayName("Should return an exception when removing a product from the wishlist.")
-    void notRemoveProductToWishlistTest() {
-        String messageProductNotExist = "Product does not exist in this wishlist";
-
-        Wishlist wishlist = BDDMockito.mock(Wishlist.class);
-        Product product = BDDMockito.mock(Product.class);
-        List<Product> products = BDDMockito.mock(ArrayList.class);
-
-        BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
-        BDDMockito.given(this.productService.findProductById(BDDMockito.anyString())).willReturn(product);
-        BDDMockito.given(wishlist.getProducts()).willReturn(products);
-        BDDMockito.given(wishlist.getProducts().contains(product)).willReturn(false);
-
-        Throwable exception = Assertions.catchThrowable(() -> this.wishlistService.removeProductToWishlist("1", "1"));
-
-        Assertions.assertThat(exception)
-                .isInstanceOf(BusinessException.class)
-                .hasMessage(messageProductNotExist);
 
     }
 
@@ -159,7 +138,7 @@ class WishlistServiceTest {
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        boolean result = this.wishlistService.consultProductInWishList(wishlist.getCustomerId(), product.getId());
+        boolean result = this.wishlistService.checkProductInWishList(wishlist.getCustomerId(), product.getId());
 
         Assertions.assertThat(result).isTrue();
     }
@@ -171,7 +150,7 @@ class WishlistServiceTest {
 
         BDDMockito.given(this.wishlistRepository.findByCustomerId(BDDMockito.anyString())).willReturn(Optional.of(wishlist));
 
-        boolean result = this.wishlistService.consultProductInWishList(wishlist.getCustomerId(), "2");
+        boolean result = this.wishlistService.checkProductInWishList(wishlist.getCustomerId(), "2");
 
         Assertions.assertThat(result).isFalse();
     }

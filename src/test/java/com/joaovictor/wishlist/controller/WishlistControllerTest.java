@@ -49,7 +49,7 @@ class WishlistControllerTest {
         BDDMockito.given(this.wishlistService.getAllProductsByCustomerId(BDDMockito.anyString())).willReturn(wishlist);
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .get(WISHLIST_API.concat(String.format("/products/%s", wishlist.getCustomerId())))
+                .get(WISHLIST_API.concat(String.format("/all/%s", wishlist.getCustomerId())))
                 .accept(MediaType.APPLICATION_JSON);
 
         mockMvc
@@ -108,12 +108,12 @@ class WishlistControllerTest {
     @Test
     @DisplayName("Must check if a product exists in the wishlist.")
     void consultProductInWishlistTest() throws Exception {
-        BDDMockito.given(this.wishlistService.consultProductInWishList(BDDMockito.anyString(), BDDMockito.anyString())).willReturn(true);
+        BDDMockito.given(this.wishlistService.checkProductInWishList(BDDMockito.anyString(), BDDMockito.anyString())).willReturn(true);
 
         String json = new ObjectMapper().writeValueAsString(new RequestDTO(BDDMockito.anyString(), BDDMockito.anyString()));
 
         MockHttpServletRequestBuilder request = MockMvcRequestBuilders
-                .post(WISHLIST_API.concat("/consultProduct"))
+                .post(WISHLIST_API.concat("/checkProduct"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .content(json);

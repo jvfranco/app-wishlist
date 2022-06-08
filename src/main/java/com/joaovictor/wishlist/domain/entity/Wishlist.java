@@ -40,10 +40,10 @@ public class Wishlist {
         return false;
     }
 
-    public void removeProductToList(Product product) {
-        List<Product> newList = new ArrayList<>();
-        newList.addAll(this.products);
-        newList.remove(product);
+    public void removeProductToList(String productId) {
+        List<Product> newList = this.products.stream()
+                .filter(p -> !p.getId().equalsIgnoreCase(productId))
+                .toList();
         this.products = newList;
         this.sumAmount();
     }

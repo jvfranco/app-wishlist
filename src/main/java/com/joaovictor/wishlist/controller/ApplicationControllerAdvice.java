@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.webjars.NotFoundException;
 
 import java.util.List;
 
@@ -24,6 +25,12 @@ public class ApplicationControllerAdvice {
                 .toList();
 
         return new ApiErrors(messages);
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ApiErrors handleValidationErrors(NotFoundException ex) {
+        return new ApiErrors(ex.getMessage());
     }
 
     @ExceptionHandler(BusinessException.class)

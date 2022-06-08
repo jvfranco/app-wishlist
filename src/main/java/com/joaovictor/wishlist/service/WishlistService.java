@@ -1,10 +1,14 @@
 package com.joaovictor.wishlist.service;
 
+import com.joaovictor.wishlist.domain.entity.Product;
 import com.joaovictor.wishlist.domain.entity.Wishlist;
 import com.joaovictor.wishlist.domain.repository.WishlistRepository;
 import com.joaovictor.wishlist.exception.BusinessException;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.webjars.NotFoundException;
+
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -17,12 +21,15 @@ public class WishlistService {
     private final WishlistRepository wishlistRepository;
     private final ProductService productService;
 
-    public Wishlist getAllProductsByCustomerId(String customerId) throws BusinessException {
-        return findWishlistByCustomerId(customerId);
+    public Wishlist getAllProductsByCustomerId(String customerId) {
+        return findWishlistByCustomerId(customerId)
+                .orElseThrow(() -> new NotFoundException(messageNoProducts));
     }
 
-    public Wishlist addProductToWishlist(String customerId, String productId) throws BusinessException {
-        var wishlist = this.findWishlistByCustomerId(customerId);
+    public Wishlist addProductToWishlist(String customerId, String productId) {
+        var wishlist = this.findWishlistByCustomerId(customerId)
+                .orElse(Wishlist.builder().customerId(customerId).build());
+
         var product = this.productService.findProductById(productId);
 
         boolean wasAdded = wishlist.addProductToList(product);
@@ -31,32 +38,29 @@ public class WishlistService {
             throw new BusinessException(String.format(messageMaxProducts, 20));
         }
 
-        return wishlist;
+        return this.wishlistRepository.save(wishlist);
     }
 
-    public Wishlist removeProductToWishlist(String customerId, String productId) throws BusinessException {
-        var wishlist = this.findWishlistByCustomerId(customerId);
+    public Wishlist removeProductToWishlist(String customerId, String productId) {
+        var wishlist = this.findWishlistByCustomerId(customerId)
+                .orElseThrow(() -> new NotFoundException(messageNoProducts));
 
         if (wishlist.getProducts() != null && !wishlist.getProducts().isEmpty()) {
-            var product = this.productService.findProductById(productId);
-            if (wishlist.getProducts().contains(product)) {
-                wishlist.removeProductToList(product);
-                return wishlist;
-            }
-            throw new BusinessException(messageProductNotExist);
+            wishlist.removeProductToList(productId);
+            return this.wishlistRepository.save(wishlist);
         }
         throw new BusinessException(messageNoProducts);
     }
 
-    public boolean consultProductInWishList(String customerId, String productId) throws BusinessException {
-        var wishlist = this.findWishlistByCustomerId(customerId);
+    public boolean checkProductInWishList(String customerId, String productId) {
+        var wishlist = this.findWishlistByCustomerId(customerId)
+                .orElseThrow(() -> new NotFoundException(messageNoProducts));
 
         return wishlist.getProducts().stream()
                 .anyMatch(p -> p.getId().equalsIgnoreCase(productId));
     }
 
-    public Wishlist findWishlistByCustomerId(String customerId) throws BusinessException {
-        return this.wishlistRepository.findByCustomerId(customerId)
-                .orElseThrow(() -> new BusinessException("Wishlist not found."));
+    public Optional<Wishlist> findWishlistByCustomerId(String customerId) {
+        return this.wishlistRepository.findByCustomerId(customerId);
     }
 }

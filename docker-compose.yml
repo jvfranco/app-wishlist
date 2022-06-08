@@ -1,0 +1,26 @@
+version: '3'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      - wishlist-network
+
+  wishlist:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: wishlist
+    container_name: wishlist
+    ports:
+      - "8080:8080"
+    networks:
+      - wishlist-network
+    depends_on:
+      - mongodb
+
+networks:
+  wishlist-network:
+    driver: bridge
